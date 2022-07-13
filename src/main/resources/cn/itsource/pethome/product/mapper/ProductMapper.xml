@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.itsource.pethome.product.mapper.ProductMapper">
+    <!--添加一个商品--><!--在后面添加自增id 就可以在添加成功后自动设置回product-->
+    <insert id="save" parameterType="Product" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+       INSERT INTO t_product ( name, resources, saleprice, offsaletime, onsaletime, state, costprice, createtime, salecount)
+       VALUES (#{name},#{resources},#{saleprice},#{offsaletime},#{onsaletime},#{state},#{costprice},#{createtime},#{salecount})
+    </insert>
+    <insert id="saveProductDetail">
+        INSERT INTO t_product_detail ( product_id, intro, orderNotice)
+        VALUES (#{product_id},#{intro},#{orderNotice})
+    </insert>
+
+    <!--修改-->
+    <update id="update" parameterType="Product">
+        UPDATE t_product SET name=#{name}, resources=#{resources},saleprice=#{saleprice},
+        offsaletime=#{offsaletime},onsaletime=#{onsaletime},state=#{state},costprice=#{costprice},salecount=#{salecount}
+        WHERE id = #{id}
+    </update>
+    <update id="updateProductDetail">
+        UPDATE t_product_detail SET intro = #{intro},orderNotice = #{orderNotice}
+        WHERE product_id = #{product_id}
+    </update>
+
+    <update id="updateBatch">
+        UPDATE t_product
+        <set>
+            state = #{state}
+            <if test="onsaletime!=null">
+                ,onsaletime = #{onsaletime}
+            </if>
+            <if test="onsaletime!=null">
+                ,offsaletime = #{offsaletime}
+            </if>
+        </set>
+        WHERE id in
+        <foreach collection="list" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!--删除-->
+    <delete id="delete" parameterType="long">
+        DELETE from t_product where id = #{id}
+    </delete>
+    <!--批量删除-->
+    <delete id="deleteBatch">
+         DELETE from t_product where id in
+         <foreach collection="list" item="id" separator="," open="(" close=")">
+             #{id}
+         </foreach>
+    </delete>
+
+    <!--根据id查询一个商品-->
+    <select id="findOne" resultType="Product">
+        SELECT * FROM t_product WHERE id = #{id}
+    </select>
+
+    <!--查询所有商品高级查询不分页-->
+    <select id="findAll" resultType="Product">
+        SELECT * FROM t_product
+        <include refid="whereClause"></include>
+    </select>
+
+    <!--查询所有商品分页高级查询-->
+    <select id="findPage" resultType="Product">
+        SELECT * FROM t_product
+        <include refid="whereClause"></include>
+        <include refid="sortClause"></include>
+        LIMIT #{begin},#{pageSize}
+    </select>
+
+    <!--高级查询和分页查询的结果集-->
+    <!-- 自定义结果集  嵌套结果 -->
+
+    <!--查询分页总数-->
+    <select id="findTotal" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM t_product
+        <include refid="whereClause"></include>
+    </select>
+    <select id="findProductDetail" resultMap="productDetailMap">
+        SELECT p.* ,d.id did,d.intro,d.orderNotice,d.product_id from t_product p
+        LEFT JOIN t_product_detail d
+        ON p.id = d.product_id
+        WHERE p.id = #{id}
+    </select>
+    <resultMap id="productDetailMap" type="ProductDetail">
+        <id column="did" property="id"></id>
+        <result column="intro" property="intro"></result>
+        <result column="orderNotice" property="orderNotice"></result>
+        <result column="product_id" property="product_id"></result>
+        <association property="product" javaType="Product">
+            <id column="id" property="id"></id>
+            <result column="name" property="name"></result>
+            <result column="resources" property="resources"></result>
+            <result column="saleprice" property="saleprice"></result>
+            <result column="offsaletime" property="offsaletime"></result>
+            <result column="onsaletime" property="onsaletime"></result>
+            <result column="state" property="state"></result>
+            <result column="costprice" property="costprice"></result>
+            <result column="createtime" property="createtime"></result>
+            <result column="salecount" property="salecount"></result>
+        </association>
+    </resultMap>
+
+    <!--高级查询的where语句-->
+    <sql id="whereClause">
+        <where>
+            <if test="name != null and name.trim()!=''">
+                and name like concat("%",trim(#{name}),"%")
+            </if>
+            <if test="state != null">
+                and state = #{state}
+            </if>
+        </where>
+    </sql>
+
+    <!--分页查询排序语句-->
+    <sql id="sortClause">
+        <if test="orderField !=null">
+            ORDER BY ${orderField}
+        </if>
+        <choose>
+            <when test="orderType =='desc'">
+                 DESC
+            </when>
+            <otherwise>
+                 ASC
+            </otherwise>
+        </choose>
+    </sql>
+</mapper>

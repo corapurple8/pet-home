@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.itsource.pethome.user.mapper.ShopMapper">
+
+    <!--添加一个商铺-->
+    <insert id="save" parameterType="Shop">
+        INSERT INTO t_shop (name,tel,registerTime,state,address,logo,admin_id)
+        VALUES (#{name},#{tel},#{registerTime},#{state},#{address},#{logo},#{admin.id})
+    </insert>
+
+    <!--修改-->
+    <update id="update" parameterType="Shop">
+        UPDATE t_shop SET name=#{name},tel=#{tel},registerTime=#{registerTime}
+        ,state=#{state},address=#{address},logo=#{logo}  WHERE id = #{id}
+    </update>
+
+    <!--删除-->
+    <delete id="delete" parameterType="long">
+        DELETE from t_shop where id = #{id}
+    </delete>
+    <!--批量删除-->
+    <delete id="deleteBatch">
+         DELETE from t_shop where id in
+         <foreach collection="list" item="id" separator="," open="(" close=")">
+             #{id}
+         </foreach>
+    </delete>
+
+    <!--根据id查询一个商铺-->
+    <select id="findOne" resultMap="shopMap">
+        SELECT s.*,e.username,e.password,e.email FROM t_shop s LEFT JOIN t_employee e
+        ON s.admin_id = e.id WHERE s.id = #{id}
+    </select>
+
+    <!--根据管理员id查询一个商铺-->
+    <select id="findByAdminId" resultMap="shopMap">
+        SELECT s.*,e.username,e.password,e.email FROM t_shop s LEFT JOIN t_employee e
+        ON s.admin_id = e.id WHERE e.id = #{id}
+    </select>
+
+    <!--查询所有商铺高级查询不分页-->
+    <select id="findAll" resultMap="shopMap">
+        SELECT s.*,e.username,e.password,e.email FROM t_shop s LEFT JOIN t_employee e
+        ON s.admin_id = e.id
+        <include refid="whereClause"></include>
+    </select>
+
+    <!--查询所有商铺分页高级查询-->
+    <select id="findPage" resultMap="shopMap">
+        SELECT s.*,e.username,e.password,e.email FROM t_shop s LEFT JOIN t_employee e
+        ON s.admin_id = e.id
+        <include refid="whereClause"></include>
+        <include refid="sortClause"></include>
+        LIMIT #{begin},#{pageSize}
+    </select>
+
+    <!--高级查询和分页查询的结果集-->
+    <!-- 自定义结果集  嵌套结果 -->
+    <resultMap id="shopMap" type="Shop">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="tel" property="tel"/>
+        <result column="state" property="state"/>
+        <result column="registerTime" property="registerTime"/>
+        <result column="address" property="address"/>
+        <result column="logo" property="logo"/>
+        <association property="admin" javaType="Employee">
+            <id column="admin_id" property="id"/>
+            <result column="username" property="username"/>
+            <result column="password" property="password"/>
+            <result column="email" property="email"/>
+        </association>
+    </resultMap>
+
+    <!--查询分页总数-->
+    <select id="findTotal" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM t_shop
+        <include refid="whereClause"></include>
+    </select>
+
+
+
+    <!--高级查询的where语句-->
+    <sql id="whereClause">
+        <where>
+            <if test="name != null and name.trim()!=''">
+                and name like concat("%",trim(#{name}),"%")
+            </if>
+        </where>
+    </sql>
+
+    <!--分页查询排序语句-->
+    <sql id="sortClause">
+        <if test="orderField !=null">
+            ORDER BY ${orderField}
+        </if>
+        <choose>
+            <when test="orderType =='desc'">
+                 DESC
+            </when>
+            <otherwise>
+                 ASC
+            </otherwise>
+        </choose>
+    </sql>
+</mapper>

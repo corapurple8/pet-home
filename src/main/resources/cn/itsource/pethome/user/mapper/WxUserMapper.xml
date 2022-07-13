@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.itsource.pethome.user.mapper.WxUserMapper">
+    <select id="findByOpenidAndUnionid" resultType="cn.itsource.pethome.domain.WxUser">
+        SELECT * FROM t_wxuser WHERE openid = #{openid} AND unionid = #{unionid}
+    </select>
+    <insert id="save">
+        INSERT INTO t_wxuser (openid,nickname,sex,address,headimgurl,unionid,user_id)
+        VALUES (#{openid},#{nickname},#{sex},#{address},#{headimgurl},#{unionid},#{user_id})
+    </insert>
+</mapper>

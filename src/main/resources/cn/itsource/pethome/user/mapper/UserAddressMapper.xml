@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.itsource.pethome.user.mapper.UserAddressMapper">
+    <!--添加一个用户--><!--在后面添加自增id 就可以在添加成功后自动设置回user-->
+    <insert id="save" parameterType="UserAddress" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+        insert into t_user_address (createTime, updateTime, contacts, areaCode, address, user_id, fullAddress, phone,
+                            phoneBack, tel, postCode, email)
+        values (#{createTime},#{updateTime},#{contacts},#{areaCode},#{address},#{user.id},#{fullAddress},#{phone}
+        ,#{phoneBack},#{tel},#{postCode},#{email})
+    </insert>
+
+    <!--修改-->
+    <update id="update" parameterType="UserAddress">
+        UPDATE t_user_address SET updateTime=#{updateTime},contacts=#{contacts},
+        areaCode= #{areaCode},address=#{address},fullAddress=#{fullAddress},phone= #{phone},
+        phoneBack=#{phoneBack}, tel=#{tel}, postCode=#{postCode}, email=#{email}
+        WHERE id = #{id}
+    </update>
+
+    <!--删除-->
+    <delete id="delete" parameterType="long">
+        DELETE from t_user_address where id = #{id}
+    </delete>
+    <!--批量删除-->
+    <delete id="deleteBatch">
+         DELETE from t_user_address where id in
+         <foreach collection="list" item="id" separator="," open="(" close=")">
+             #{id}
+         </foreach>
+    </delete>
+
+    <!--根据id查询一个用户-->
+    <select id="findOne" resultType="UserAddress">
+        SELECT * FROM t_user_address WHERE id = #{id}
+    </select>
+
+    <!--查询用户的所有用户地址-->
+    <select id="findAll" resultMap="UserAddressMap">
+        select ua.*,u.id,u.username
+        from t_user_address ua left join t_user u on ua.user_id = u.id
+        WHERE user_id = #{id}
+    </select>
+    <resultMap id="UserAddressMap" type="UserAddress">
+        <id column="id" property="id"></id>
+        <result column="createTime" property="createTime"></result>
+        <result column="updateTime" property="updateTime"></result>
+        <result column="contacts" property="contacts"></result>
+        <result column="areaCode" property="areaCode"></result>
+        <result column="address" property="address"></result>
+        <result column="fullAddress" property="fullAddress"></result>
+        <result column="phone" property="phone"></result>
+        <result column="phoneBack" property="phoneBack"></result>
+        <result column="tel" property="tel"></result>
+        <result column="postCode" property="postCode"></result>
+        <result column="email" property="email"></result>
+        <association property="user" javaType="User">
+            <id property="id" column="user_id"></id>
+            <result property="username" column="username"></result>
+        </association>
+    </resultMap>
+
+    <!--查询所有用户分页高级查询-->
+    <select id="findPage" resultType="UserAddress">
+        SELECT * FROM t_user_address
+        <include refid="sortClause"></include>
+        LIMIT #{begin},#{pageSize}
+    </select>
+
+    <!--高级查询和分页查询的结果集-->
+    <!-- 自定义结果集  嵌套结果 -->
+
+    <!--查询分页总数-->
+    <select id="findTotal" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM t_user_address
+    </select>
+    <!--高级查询的where语句-->
+
+    <!--分页查询排序语句-->
+    <sql id="sortClause">
+        <if test="orderField !=null">
+            ORDER BY ${orderField}
+        </if>
+        <choose>
+            <when test="orderType =='desc'">
+                 DESC
+            </when>
+            <otherwise>
+                 ASC
+            </otherwise>
+        </choose>
+    </sql>
+</mapper>

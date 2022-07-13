@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.itsource.pethome.user.mapper.UserMapper">
+    <!--添加一个用户--><!--在后面添加自增id 就可以在添加成功后自动设置回user-->
+    <insert id="save" parameterType="User" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+        INSERT INTO t_user (username,email,phone,salt,password,
+        state,age,createtime,headImg) VALUES (#{username},#{email},#{phone},#{salt},
+        #{password},#{state},#{age},#{createtime},#{headImg})
+    </insert>
+
+    <!--修改-->
+    <update id="update" parameterType="User">
+        UPDATE t_user SET email=#{email},phone=#{phone},salt=#{salt},
+        password= #{password},state=#{state},age=#{age},headImg= #{headImg}
+        WHERE id = #{id}
+    </update>
+
+    <!--删除-->
+    <delete id="delete" parameterType="long">
+        DELETE from t_user where id = #{id}
+    </delete>
+    <!--批量删除-->
+    <delete id="deleteBatch">
+         DELETE from t_user where id in
+         <foreach collection="list" item="id" separator="," open="(" close=")">
+             #{id}
+         </foreach>
+    </delete>
+
+    <!--根据id查询一个用户-->
+    <select id="findOne" resultType="User">
+        SELECT * FROM t_user WHERE id = #{id}
+    </select>
+    <!--根据手机号查询一个用户-->
+    <select id="findByPhone" resultType="cn.itsource.pethome.domain.User">
+        SELECT * FROM t_user WHERE phone = #{phone}
+    </select>
+    <!--根据邮箱查找一个用户-->
+    <select id="findByEmail" resultType="cn.itsource.pethome.domain.User">
+        SELECT * FROM t_user WHERE email = #{email}
+    </select>
+
+    <!--查询所有用户高级查询不分页-->
+    <select id="findAll" resultType="User">
+        SELECT * FROM t_user
+        <include refid="whereClause"></include>
+    </select>
+
+    <!--查询所有用户分页高级查询-->
+    <select id="findPage" resultType="User">
+        SELECT * FROM t_user
+        <include refid="whereClause"></include>
+        <include refid="sortClause"></include>
+        LIMIT #{begin},#{pageSize}
+    </select>
+
+    <!--高级查询和分页查询的结果集-->
+    <!-- 自定义结果集  嵌套结果 -->
+
+    <!--查询分页总数-->
+    <select id="findTotal" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM t_user
+        <include refid="whereClause"></include>
+    </select>
+    <!--登录：根据用户名/邮箱/手机号查询前台用户-->
+    <select id="findByUsernameOrEmailOrPhone" resultType="cn.itsource.pethome.domain.User">
+        SELECT * FROM t_user WHERE username = #{username} OR email = #{username} OR phone = #{username}
+    </select>
+    <select id="findByUsername" resultType="cn.itsource.pethome.domain.User">
+        SELECT * FROM t_user WHERE username = #{username}
+    </select>
+
+    <!--高级查询的where语句-->
+    <sql id="whereClause">
+        <where>
+            <if test="username != null and username.trim()!=''">
+                and username like concat("%",trim(#{username}),"%")
+            </if>
+        </where>
+    </sql>
+
+    <!--分页查询排序语句-->
+    <sql id="sortClause">
+        <if test="orderField !=null">
+            ORDER BY ${orderField}
+        </if>
+        <choose>
+            <when test="orderType =='desc'">
+                 DESC
+            </when>
+            <otherwise>
+                 ASC
+            </otherwise>
+        </choose>
+    </sql>
+</mapper>

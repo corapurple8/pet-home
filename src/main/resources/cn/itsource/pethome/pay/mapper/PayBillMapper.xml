@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.itsource.pethome.pay.mapper.PayBillMapper">
+    <!--新增一个订单-->
+   <insert id="save">
+        INSERT INTO t_pay_bill (digest, money, state, lastPayTime, payChannel, createTime, updateTime,
+         user_id, unionPaySn, businessType, businessKey, shop_id, orderSn)
+        VALUES (#{digest},#{money},#{state},#{lastPayTime},#{payChannel},#{createTime},#{updateTime},
+        #{user.id},#{unionPaySn},#{businessType},#{businessKey},#{shop.id},#{orderSn})
+   </insert>
+    <select id="findByOrderSn" resultMap="payBillMap">
+        SELECT b.* FROM t_pay_bill b
+        LEFT JOIN t_shop s on b.shop_id = s.id
+        LEFT JOIN t_user u on b.user_id = u.id
+        WHERE b.orderSn = #{orderSn}
+    </select>
+    <update id="update">
+        UPDATE t_pay_bill SET digest=#{digest}, money=#{money}, state=#{state}, lastPayTime=#{lastPayTime}, payChannel=#{payChannel}, updateTime=#{updateTime},
+        user_id=#{user.id}, unionPaySn=#{unionPaySn}, businessType=#{businessType}, businessKey=#{businessKey}, shop_id=#{shop.id},orderSn=#{orderSn}
+        WHERE id = #{id}
+    </update>
+
+    <resultMap id="payBillMap" type="PayBill">
+        <id property="id" column="id"></id>
+        <result column="digest" property="digest"></result>
+        <result column="money" property="money"></result>
+        <result column="state" property="state"></result>
+        <result column="lastPayTime" property="lastPayTime"></result>
+        <result column="payChannel" property="payChannel"></result>
+        <result column="createTime" property="createTime"></result>
+        <result column="updateTime" property="updateTime"></result>
+        <result column="unionPaySn" property="unionPaySn"></result>
+        <result column="businessType" property="businessType"></result>
+        <result column="businessKey" property="businessKey"></result>
+        <result column="orderSn" property="orderSn"></result>
+        <association property="user" javaType="User">
+            <id column="user_id" property="id"></id>
+        </association>
+        <association property="shop" javaType="Shop">
+            <id column="shop_id" property="id"></id>
+        </association>
+    </resultMap>
+
+</mapper>

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.itsource.pethome.pet.mapper.PetMapper">
+    <!--void save(Pet adopt);
+    添加一个送养信息-->
+    <insert id="save" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+         INSERT INTO t_pet (adopt_id, name, resources, saleprice, offsaletime, onsaletime,
+          state, costprice, createtime, type_id, shop_id, user_id)
+         VALUES (#{adopt.id},#{name},#{resources},#{saleprice},#{offsaletime},#{onsaletime},
+         #{state},#{costprice},#{createtime},#{petType.id},#{shop.id},#{user.id})
+    </insert>
+    <insert id="savePetDetail">
+        INSERT INTO t_pet_detail (pet_id, adoptNotice, intro)
+        values (#{pet_id},#{adoptNotice},#{intro})
+    </insert>
+
+    <!--修改-->
+    <update id="update">
+        UPDATE t_pet SET adopt_id=#{adopt.id}, name=#{name}, resources=#{resources}, saleprice=#{saleprice},
+         offsaletime=#{offsaletime},onsaletime=#{onsaletime},state=#{state}, shop_id=#{shop.id},user_id=#{user.id}
+        WHERE id = #{id}
+    </update>
+    <update id="changeState">
+        UPDATE t_pet SET state = #{state},onsaletime = #{onsaletime},offsaletime = #{offsaletime}
+        WHERE id in
+        <foreach collection="list" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!--删除-->
+    <delete id="delete" parameterType="long">
+        DELETE from t_pet where id = #{id}
+    </delete>
+    <!--批量删除-->
+    <delete id="deleteBatch">
+         DELETE from t_pet where id in
+         <foreach collection="list" item="id" separator="," open="(" close=")">
+             #{id}
+         </foreach>
+    </delete>
+
+    <!--根据id查询一个送养信息-->
+    <select id="findOne" resultMap="petMap">
+        select p.*,pt.name ptname,s.name sname,smm.name smmname,pd.id pdid,pd.intro,pd.adoptNotice
+        from t_pet p left join t_pet_type pt on p.type_id = pt.id
+        left join t_user u on p.user_id= u.id
+        left join t_shop s on p.shop_id = s.id
+        left join t_search_master_message smm on p.adopt_id = smm.id
+        left join t_pet_detail pd on p.id = pd.pet_id
+        WHERE p.id = #{id}
+    </select>
+
+
+    <!--查询所有送养信息高级查询不分页-->
+    <select id="findAll" resultMap="petMap">
+        select p.*,pt.name ptname,s.name sname,smm.name smmname,pd.id pdid,pd.intro,pd.adoptNotice
+        from t_pet p left join t_pet_type pt on p.type_id = pt.id
+        left join t_user u on p.user_id= u.id
+        left join t_shop s on p.shop_id = s.id
+        left join t_search_master_message smm on p.adopt_id = smm.id
+        left join t_pet_detail pd on p.id = pd.pet_id
+        <include refid="whereClause"></include>
+    </select>
+
+    <!--查询所有送养信息分页高级查询-->
+    <select id="findPage" resultMap="petMap">
+        select p.*,pt.name ptname,s.name sname,smm.name smmname,pd.id pdid,pd.intro,pd.adoptNotice
+        from t_pet p left join t_pet_type pt on p.type_id = pt.id
+        left join t_user u on p.user_id= u.id
+        left join t_shop s on p.shop_id = s.id
+        left join t_search_master_message smm on p.adopt_id = smm.id
+        left join t_pet_detail pd on p.id = pd.pet_id
+        <include refid="whereClause"></include>
+        <include refid="sortClause"></include>
+        LIMIT #{begin},#{pageSize}
+    </select>
+
+    <!--高级查询和分页查询的结果集-->
+    <resultMap id="petMap" type="Pet">
+        <id column="id" property="id"></id>
+        <result column="name" property="name"></result>
+        <result column="resources" property="resources"></result>
+        <result column="saleprice" property="saleprice"></result>
+        <result column="offsaletime" property="offsaletime"></result>
+        <result column="onsaletime" property="onsaletime"></result>
+        <result column="state" property="state"></result>
+        <result column="costprice" property="costprice"></result>
+        <result column="createtime" property="createtime"></result>
+        <association property="adopt" javaType="Adopt">
+            <id column="adopt_id" property="id"></id>
+            <result column="smmname" property="name"></result>
+        </association>
+        <association property="petType" javaType="PetType">
+            <id column="type_id" property="id"></id>
+            <result property="name" column="ptname"></result>
+        </association>
+        <association property="user" javaType="User">
+            <id column="user_id" property="id"></id>
+            <result property="username" column="username"></result>
+        </association>
+        <association property="shop" javaType="Shop">
+            <id column="shop_id" property="id"></id>
+            <result property="name" column="sname"></result>
+        </association>
+        <association property="petDetail" javaType="PetDetail">
+            <id column="pdid" property="id"></id>
+            <result column="id" property="pet_id"></result>
+            <result property="intro" column="intro"></result>
+            <result property="adoptNotice" column="adoptNotice"></result>
+        </association>
+    </resultMap>
+
+    <!--查询分页总数-->
+    <select id="findTotal" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM t_pet p
+        <include refid="whereClause"></include>
+    </select>
+
+
+    <!--高级查询的where语句-->
+    <sql id="whereClause">
+        <where>
+            <if test="name != null and name.trim()!=''">
+                and p.name like concat("%",trim(#{name}),"%")
+            </if>
+            <if test="shop_id != null">
+                and p.shop_id = #{shop_id}
+            </if>
+            <if test="state != null">
+                and p.state =#{state}
+            </if>
+        </where>
+    </sql>
+
+    <!--分页查询排序语句-->
+    <sql id="sortClause">
+        <if test="orderField !=null">
+            ORDER BY ${orderField}
+        </if>
+        <choose>
+            <when test="orderType =='desc'">
+                 DESC
+            </when>
+            <otherwise>
+                 ASC
+            </otherwise>
+        </choose>
+    </sql>
+</mapper>

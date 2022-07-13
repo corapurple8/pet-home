@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.itsource.pethome.org.mapper.EmployeeMapper">
+
+    <!--添加一个员工-->
+    <!--使用自增主键返回传入的对象 keycolumn 表中对应的属性名 property主键返回对象属性名-->
+    <insert id="save" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+        INSERT INTO t_employee (username,email,phone,password,age,state,job_id)
+        VALUES (#{username},#{email},#{phone},#{password},#{age},#{state},#{job_id})
+    </insert>
+
+    <!--修改一个员工-->
+    <update id="update">
+        UPDATE t_employee SET  username =#{username},email =#{email},phone =#{phone},password =#{password},
+        age =#{age},state =#{state},job_id =#{job_id} WHERE id = #{id}
+    </update>
+
+    <!--删除一个员工-->
+    <delete id="delete">
+        DELETE FROM t_employee WHERE id = #{id}
+    </delete>
+    <delete id="deleteBatch">
+        DELETE FROM t_employee WHERE id in
+        <foreach collection="list" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!--根据id查询一个员工-->
+    <select id="findOne" resultType="cn.itsource.pethome.domain.Employee">
+        SELECT * FROM t_employee WHERE id = #{id}
+    </select>
+
+    <!--根据职位编号查询员工数组-->
+    <select id="findByJobId" resultType="cn.itsource.pethome.domain.Employee">
+        SELECT * FROM t_employee WHERE job_id = #{job_id}
+    </select>
+
+    <!--登录：根据用户名/邮箱/手机号查询一个后台员工-->
+    <select id="findByUsernameOrEmailOrPhone" resultType="cn.itsource.pethome.domain.Employee">
+        SELECT * FROM t_employee WHERE username = #{username} OR email = #{username} OR phone = #{username}
+    </select>
+
+    <!--高级查询所有员工-->
+    <select id="findAll" resultType="cn.itsource.pethome.domain.Employee">
+        SELECT * FROM t_employee
+        <include refid="whereClause"></include>
+    </select>
+
+    <!--分页查询所有员工-->
+    <select id="findPage" resultType="cn.itsource.pethome.domain.Employee">
+        SELECT * FROM t_employee
+        <include refid="whereClause"></include>
+        <include refid="sortClause"></include>
+        limit #{begin},#{pageSize}
+    </select>
+
+    <!--分页查询总数-->
+    <select id="findTotal" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM t_employee
+        <include refid="whereClause"></include>
+    </select>
+
+
+    <!--高级查询语句-->
+    <sql id="whereClause">
+        <where>
+            <if test="username!=null and username.trim()!=''">
+                AND username LIKE concat("%",trim(#{username}),"%")
+            </if>
+        </where>
+    </sql>
+    <!--排序方式语句-->
+    <sql id="sortClause">
+        <if test="orderField!=null">
+            ORDER BY ${orderField}
+        </if>
+        <choose>
+            <when test="orderType=='desc'">
+                 DESC
+            </when>
+            <otherwise>
+                 ASC
+            </otherwise>
+        </choose>
+    </sql>
+</mapper>

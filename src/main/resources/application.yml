@@ -1,0 +1,42 @@
+server:
+  port: 8080
+spring:
+  datasource:
+    username: root
+    password: 123456
+    url: jdbc:mysql://pethome_mysql:3306/pethome?useUnicode=true&characterEncoding=utf8&useSSL=false&autoReconnect=true&failOverReadOnly=false
+    driver-class-name: com.mysql.jdbc.Driver
+#  quartz:
+#    job-store-type: jdbc #持久化到数据库
+#    properties:
+#      org:
+#        quartz:
+#          datasource:
+#            driver-class-name: com.mysql.jdbc.Driver
+#            jdbcUrl: jdbc:mysql:///pethome?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+#            username: root
+#            password: "0629"
+#          scheduler:
+#            instancName: clusteredScheduler
+#            instanceId: AUTO
+#          jobStore:
+#            class: org.quartz.impl.jdbcjobstore.JobStoreTX
+#            driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate #StdJDBCDelegate说明支持集群
+#            tablePrefix: QRTZ_
+#            isClustered: true
+#            clusterCheckinInterval: 1000
+#            useProperties: false
+#          threadPool:
+#            class: org.quartz.simpl.SimpleThreadPool
+#            threadCount: 20
+#            threadPriority: 5
+#配置别名
+mybatis:
+  type-aliases-package: cn.itsource.pethome.domain,cn.itsource.pethome.query
+  mapper-locations: classpath:cn/itsource/pethome/*/mapper/*Mapper.xml
+#日志
+logging:
+  level:
+    cn:
+      itsource:
+        pethome: trace

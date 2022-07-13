@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.itsource.pethome.order.mapper.OrderAddressMapper">
+    <!--添加一个领养订单--><!--在后面添加自增id 就可以在添加成功后自动设置回orderAddress-->
+    <insert id="save" parameterType="OrderAddress" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+       insert into t_order_address ( createTime, updateTime,
+        orderSn, contacts, areaCode, address, fullAddress, phone, phoneBack, tel, postCode, email)
+       VALUES (#{createTime},#{updateTime},#{orderSn},#{contacts},#{areaCode},
+       #{address},#{fullAddress},#{phone},#{phoneBack},#{tel},#{postCode},#{email})
+    </insert>
+
+    <!--修改-->
+    <update id="update" parameterType="OrderAddress">
+        UPDATE t_order_address SET updateTime=#{updateTime},orderSn=#{orderSn},
+        contacts=#{contacts},areaCode=#{areaCode},address=#{address},fullAddress=#{fullAddress},phone=#{phone},
+        phoneBack=#{phoneBack},tel=#{tel},postCode=#{postCode},email=#{email}
+        WHERE id = #{id}
+    </update>
+    <select id="findByOrderSn" resultType="cn.itsource.pethome.domain.OrderAddress">
+        SELECT * FROM t_order_address WHERE orderSn = #{orderSn}
+    </select>
+
+</mapper>

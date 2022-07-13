@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.itsource.pethome.order.mapper.OrderAdoptMapper">
+    <!--添加一个领养订单--><!--在后面添加自增id 就可以在添加成功后自动设置回orderAdopt-->
+    <insert id="save" parameterType="OrderAdopt" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+       insert into t_order_adopt (digest, state, price, orderSn, paySn, lastPayTime,
+        lastConfirmTime, pet_id, user_id, shop_id, address_id,paytype)
+       VALUES (#{digest},#{state},#{price},#{orderSn},#{paySn},#{lastPayTime},
+       #{lastConfirmTime},#{pet.id},#{user.id},#{shop.id},#{orderAddress.id},#{paytype})
+    </insert>
+
+    <!--修改-->
+    <update id="update" parameterType="OrderAdopt">
+        UPDATE t_order_adopt SET digest=#{digest}, state=#{state},price=#{price},
+        orderSn=#{orderSn},paySn=#{paySn},lastPayTime=#{lastPayTime},lastConfirmTime=#{lastConfirmTime},
+        pet_id=#{pet.id}, user_id=#{user.id}, shop_id=#{shop.id},address_id=#{orderAddress.id},paytype=#{paytype}
+        WHERE id = #{id}
+    </update>
+
+    <select id="findOne" resultMap="orderAdoptMap">
+        SELECT oa.* FROM t_order_adopt oa
+        left join t_pet p on oa.pet_id = p.id
+        left join t_shop s on oa.shop_id  = s.id
+        left join t_user u on oa.user_id = u.id
+        left join t_order_address ad on oa.address_id = ad.id
+        WHERE oa.id = #{id}
+    </select>
+    <select id="findByOrderSn" resultMap="orderAdoptMap">
+        SELECT oa.* FROM t_order_adopt oa
+        left join t_pet p on oa.pet_id = p.id
+        left join t_shop s on oa.shop_id  = s.id
+        left join t_user u on oa.user_id = u.id
+        left join t_order_address ad on oa.address_id = ad.id
+        WHERE oa.orderSn = #{orderSn}
+    </select>
+
+    <resultMap id="orderAdoptMap" type="OrderAdopt">
+        <id property="id" column="id"></id>
+        <result property="digest" column="digest"></result>
+        <result property="state" column="state"></result>
+        <result property="price" column="price"></result>
+        <result property="orderSn" column="orderSn"></result>
+        <result property="paySn" column="paySn"></result>
+        <result property="lastPayTime" column="lastPayTime"></result>
+        <result property="lastConfirmTime" column="lastConfirmTime"></result>
+        <result property="paytype" column="paytype"></result>
+        <association property="pet" javaType="Pet">
+            <id column="pet_id" property="id"></id>
+        </association>
+        <association property="user" javaType="User">
+            <id column="user_id" property="id"></id>
+        </association>
+        <association property="shop" javaType="Shop">
+            <id column="shop_id" property="id"></id>
+        </association>
+        <association property="orderAddress" javaType="OrderAddress">
+            <id column="address_id" property="id"></id>
+        </association>
+    </resultMap>
+
+</mapper>

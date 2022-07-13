@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.itsource.pethome.pay.mapper.AlipayInfoMapper">
+
+    <select id="findByShopId" resultType="cn.itsource.pethome.domain.AlipayInfo">
+        SELECT * FROM t_pay_alipay_info WHERE shop_id = #{id}
+    </select>
+    <select id="findByorderSn" resultType="cn.itsource.pethome.domain.AlipayInfo">
+        SELECT i.* FROM t_order_adopt a JOIN t_pay_alipay_info i ON a.shop_id = i.shop_id
+        WHERE a.orderSn = #{orderSn}
+    </select>
+</mapper>

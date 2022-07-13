@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.itsource.pethome.pet.mapper.AdoptMapper">
+    <!--void save(Adopt adopt);
+    添加一个送养信息-->
+    <insert id="save">
+         INSERT INTO t_search_master_message (name, price, age, gender, coat_color, resources,
+         pet_type, address, state, title, user_id, shop_id)
+         VALUES (#{name},#{price},#{age},#{gender},#{coatColor.id},#{resources},
+         #{petType.id},#{address},#{state},#{title},#{user.id},#{shop.id})
+    </insert>
+
+    <!--修改-->
+    <update id="update">
+        UPDATE t_search_master_message SET name=#{name}, price=#{price}, age=#{age}, gender=#{gender}, coat_color=#{coatColor.id}, resources=#{resources},
+         pet_type=#{petType.id}, address=#{address}, state=#{state}, title=#{title}, user_id=#{user.id}, shop_id=#{shop.id}
+        WHERE id = #{id}
+    </update>
+
+    <!--删除-->
+    <delete id="delete" parameterType="long">
+        DELETE from t_search_master_message where id = #{id}
+    </delete>
+    <!--批量删除-->
+    <delete id="deleteBatch">
+         DELETE from t_search_master_message where id in
+         <foreach collection="list" item="id" separator="," open="(" close=")">
+             #{id}
+         </foreach>
+    </delete>
+
+    <!--根据id查询一个送养信息-->
+    <select id="findOne" resultMap="adoptMap">
+         select smm.*,p.id pid,p.name pname,u.id uid,u.username uname,s.id sid,s.name sname,sdd.id sdid,sdd.name sdname
+        from t_search_master_message smm
+        left join t_pet_type p on pet_type = p.name
+        left join t_user u on user_id = u.id
+        left join t_shop s on smm.shop_id = s.id
+        left join t_systemdictionarydetail sdd on smm.coat_color = sdd.id
+        WHERE smm.id = #{id}
+    </select>
+
+
+    <!--查询所有送养信息高级查询不分页-->
+    <select id="findAll" resultMap="adoptMap">
+        select smm.*,p.id pid,p.name pname,u.id uid,u.username uname,s.id sid,s.name sname,sdd.id sdid,sdd.name sdname
+        from t_search_master_message smm
+        left join t_pet_type p on pet_type = p.name
+        left join t_user u on user_id = u.id
+        left join t_shop s on smm.shop_id = s.id
+        left join t_systemdictionarydetail sdd on smm.coat_color = sdd.id
+        <include refid="whereClause"></include>
+    </select>
+
+    <!--查询所有送养信息分页高级查询-->
+    <select id="findPage" resultMap="adoptMap">
+        select smm.*,p.id pid,p.name pname,u.id uid,u.username uname,s.id sid,s.name sname,sdd.id sdid,sdd.name sdname
+        from t_search_master_message smm
+        left join t_pet_type p on pet_type = p.name
+        left join t_user u on user_id = u.id
+        left join t_shop s on smm.shop_id = s.id
+        left join t_systemdictionarydetail sdd on smm.coat_color = sdd.id
+        <include refid="whereClause"></include>
+        <include refid="sortClause"></include>
+        LIMIT #{begin},#{pageSize}
+    </select>
+
+    <!--高级查询和分页查询的结果集-->
+    <resultMap id="adoptMap" type="Adopt">
+        <id column="id" property="id"></id>
+        <result column="name" property="name"></result>
+        <result column="price" property="price"></result>
+        <result column="age" property="age"></result>
+        <result column="gender" property="gender"></result>
+        <result column="resources" property="resources"></result>
+        <result column="address" property="address"></result>
+        <result column="state" property="state"></result>
+        <result column="title" property="title"></result>
+        <association property="coatColor" javaType="Systemdictionarydetail">
+            <id column="coat_color" property="id"></id>
+            <result property="name" column="sdname"></result>
+        </association>
+        <association property="petType" javaType="PetType">
+            <id column="pet_type" property="id"></id>
+            <result property="name" column="pName"></result>
+        </association>
+        <association property="user" javaType="User">
+            <id column="user_id" property="id"></id>
+            <result property="username" column="uname"></result>
+        </association>
+        <association property="shop" javaType="Shop">
+            <id column="shop_id" property="id"></id>
+            <result property="name" column="sname"></result>
+        </association>
+    </resultMap>
+
+    <!--查询分页总数-->
+    <select id="findTotal" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM t_search_master_message smm
+        <include refid="whereClause"></include>
+    </select>
+
+
+    <!--高级查询的where语句-->
+    <sql id="whereClause">
+        <where>
+            <if test="name != null and name.trim()!=''">
+                and smm.name like concat("%",trim(#{name}),"%")
+            </if>
+            <if test="shop_id != null">
+                and smm.shop_id = #{shop_id}
+            </if>
+            <if test="state != null">
+                and smm.state =#{state}
+            </if>
+        </where>
+    </sql>
+
+    <!--分页查询排序语句-->
+    <sql id="sortClause">
+        <if test="orderField !=null">
+            ORDER BY ${orderField}
+        </if>
+        <choose>
+            <when test="orderType =='desc'">
+                 DESC
+            </when>
+            <otherwise>
+                 ASC
+            </otherwise>
+        </choose>
+    </sql>
+</mapper>

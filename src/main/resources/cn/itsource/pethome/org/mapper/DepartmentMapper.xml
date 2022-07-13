@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.itsource.pethome.org.mapper.DepartmentMapper">
+    <!--void save(Department department);
+    添加一个部门-->
+    <insert id="save">
+        INSERT INTO t_department (sn,name,state,manager_id,parent_id)
+        VALUES (#{sn},#{name},#{state},#{manager_id},#{parent_id})
+    </insert>
+
+    <!--修改-->
+    <update id="update">
+        UPDATE t_department SET sn=#{sn},name=#{name},state=#{state}
+        ,manager_id=#{manager_id},parent_id=#{parent_id} WHERE id = #{id}
+    </update>
+
+    <!--删除-->
+    <delete id="delete" parameterType="long">
+        DELETE from t_department where id = #{id}
+    </delete>
+    <!--批量删除-->
+    <delete id="deleteBatch">
+         DELETE from t_department where id in
+         <foreach collection="list" item="id" separator="," open="(" close=")">
+             #{id}
+         </foreach>
+    </delete>
+
+    <!--根据id查询一个部门-->
+    <select id="findOne" resultType="cn.itsource.pethome.domain.Department">
+        SELECT * from t_department WHERE id = #{id}
+    </select>
+
+    <!--根据名称查询一个部门-->
+    <select id="getDepartmentByName" resultType="cn.itsource.pethome.domain.Department">
+        SELECT * from t_department WHERE name = #{name}
+    </select>
+
+    <!--查询所有部门高级查询不分页-->
+    <select id="findAll" resultMap="departmentMap">
+        SELECT d.*,p.name pName FROM t_department d LEFT JOIN t_department p
+        ON d.parent_id = p.id
+        <include refid="whereClause"></include>
+    </select>
+
+    <!--查询所有部门分页高级查询-->
+    <select id="findPage" resultMap="departmentMap">
+        SELECT d.*,p.name pName FROM t_department d LEFT JOIN t_department p
+        ON d.parent_id = p.id
+        <include refid="whereClause"></include>
+        <include refid="sortClause"></include>
+        LIMIT #{begin},#{pageSize}
+    </select>
+
+    <!--高级查询和分页查询的结果集-->
+    <resultMap id="departmentMap" type="Department">
+        <id column="id" property="id"></id>
+        <result column="name" property="name"></result>
+        <result column="sn" property="sn"></result>
+        <result column="state" property="state"></result>
+        <result column="manager_id" property="manager_id"></result>
+        <association property="parent" javaType="Department">
+            <id column="parent_id" property="id"></id>
+            <result property="name" column="pName"></result>
+        </association>
+
+    </resultMap>
+
+    <!--查询分页总数-->
+    <select id="findTotal" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM t_department d
+        <include refid="whereClause"></include>
+    </select>
+
+
+    <!--高级查询的where语句-->
+    <sql id="whereClause">
+        <where>
+            <if test="name != null and name.trim()!=''">
+                and d.name like concat("%",trim(#{name}),"%")
+            </if>
+        </where>
+    </sql>
+
+    <!--分页查询排序语句-->
+    <sql id="sortClause">
+        <if test="orderField !=null">
+            ORDER BY ${orderField}
+        </if>
+        <choose>
+            <when test="orderType =='desc'">
+                 DESC
+            </when>
+            <otherwise>
+                 ASC
+            </otherwise>
+        </choose>
+    </sql>
+</mapper>
